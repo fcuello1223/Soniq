@@ -15,6 +15,15 @@ export default async function TestPage() {
           );
         })}
       </ul>
+      <ul>
+        {voices.map((voice) => {
+          return (
+            <li key={voice.id}>
+              {voice.name} - {voice.variant}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
