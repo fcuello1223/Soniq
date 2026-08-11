@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 
 import { Toaster } from "@/components/ui/sonner";
 
+
 import "./globals.css";
 
 const inter = Inter({
