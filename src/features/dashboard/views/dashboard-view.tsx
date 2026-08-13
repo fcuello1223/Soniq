@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/page.header';
+import { PageHeader } from '@/components/page-header';
 import { HeroPattern } from '@/features/dashboard/components/hero-pattern';
 import { DashboardHeader } from '../components/dashboard-header';
 import { TextInputPanel } from '../components/text-input-panel';
