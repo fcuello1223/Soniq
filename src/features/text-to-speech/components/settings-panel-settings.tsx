@@ -10,7 +10,7 @@ import { ttsFormOptions } from "./text-to-speech-form";
 
 export function SettingsPanelSettings() {
   const form = useTypedAppFormContext(ttsFormOptions);
-  const isSubmitting = useSelector(form.store, (store) => store.isSubmitting);
+  const isSubmitting = useSelector(form.store, (selector) => selector.isSubmitting);
 
   return (
     <Fragment>
