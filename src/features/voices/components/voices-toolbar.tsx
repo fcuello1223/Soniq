@@ -12,6 +12,8 @@ import {
 
 import { voicesSearchParams } from "../lib/params";
 
+import { CreateVoiceDialog } from "./create-voice-dialog";
+
 export function VoicesToolbar() {
   const [query, setQuery] = useQueryState("query", voicesSearchParams.query);
 
@@ -48,16 +50,20 @@ export function VoicesToolbar() {
             />
           </InputGroup>
           <div className="ml-auto hidden lg:block">
-            <Button size="sm">
-              <Sparkles />
-              Custom voice
-            </Button>
+            <CreateVoiceDialog>
+              <Button size="sm">
+                <Sparkles />
+                Custom voice
+              </Button>
+            </CreateVoiceDialog>
           </div>
           <div className="lg:hidden">
-            <Button size="sm" className="w-full">
-              <Sparkles />
-              Custom voice
-            </Button>
+            <CreateVoiceDialog>
+              <Button size="sm" className="w-full">
+                <Sparkles />
+                Custom voice
+              </Button>
+            </CreateVoiceDialog>
           </div>
         </div>
       </div>
