@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  devIndicators: false
+  devIndicators: false,
+  experimental: {
+    proxyClientMaxBodySize: "20mb",
+  },
 };
 
 export default withSentryConfig(nextConfig, {
@@ -41,5 +44,5 @@ export default withSentryConfig(nextConfig, {
       // Automatically tree-shake Sentry logger statements to reduce bundle size
       removeDebugLogging: true,
     },
-  }
+  },
 });

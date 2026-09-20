@@ -11,14 +11,19 @@ import {
 } from "@/components/ui/dialog";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 
+import { CreateVoiceForm } from "@/features/voices/components/create-voice-form";
+
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 
 interface CreateVoiceDialogProps {
   children?: ReactNode;
@@ -44,6 +49,19 @@ export function CreateVoiceDialog({
               Upload or record a new audio to add a new voice to your library
             </DrawerDescription>
           </DrawerHeader>
+          <CreateVoiceForm
+            scrollable
+            footer={(submit) => {
+              return (
+                <DrawerFooter>
+                  {submit}
+                  <DrawerClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              );
+            }}
+          />
         </DrawerContent>
       </Drawer>
     );
@@ -52,13 +70,14 @@ export function CreateVoiceDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent>
-        <DialogHeader className="text-left">
+      <DialogContent className="flex flex-col max-h-[90vh] overflow-hidden">
+        <DialogHeader className="shrink-0 text-left">
           <DialogTitle>Create custom voice</DialogTitle>
           <DialogDescription>
             Upload or record a new audio to add a new voice to your library
           </DialogDescription>
         </DialogHeader>
+        <CreateVoiceForm scrollable />
       </DialogContent>
     </Dialog>
   );

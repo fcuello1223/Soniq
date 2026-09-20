@@ -120,7 +120,7 @@ export async function POST(req: Request) {
 
     createdVoiceId = voice.id;
 
-    const r2ObjectKey = `/voices/orgs/${orgId}/${voice.id}`;
+    const r2ObjectKey = `voices/orgs/${orgId}/${voice.id}.wav`;
 
     await uploadAudio({
       buffer: Buffer.from(fileBuffer),
