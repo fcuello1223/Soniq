@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { parseBuffer } from "music-metadata";
+import { polar } from "@/lib/polar";
 import z from "zod";
 
 import { VOICE_CATEGORIES } from "@/features/voices/data/voice-categories";
@@ -22,6 +23,22 @@ export async function POST(req: Request) {
 
   if (!userId || !orgId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  //Check for active subscription before creating voice
+  try {
+    const customerState = await polar.customers.getStateExternal({
+      externalId: orgId,
+    });
+
+    const hasActiveSubscription =
+      (customerState.activeSubscriptions ?? []).length > 0;
+
+    if (!hasActiveSubscription) {
+      return Response.json({ error: "SUBSCRIPTION_REQUIRED" }, { status: 403 });
+    }
+  } catch (error) {
+    return Response.json({ error: "SUBSCRIPTION_REQUIRED" }, { status: 403 });
   }
 
   const url = new URL(req.url);
@@ -150,6 +167,20 @@ export async function POST(req: Request) {
       { status: 500 },
     );
   }
+
+  //Ingest usage event to Polar (fire-and-forget; don't block response)
+  polar.events
+    .ingest({
+      events: [
+        {
+          name: "voice_creation",
+          externalCustomerId: orgId,
+          metadata: {},
+          timestamp: new Date(),
+        },
+      ],
+    })
+    .catch(() => {});
 
   return Response.json(
     { name: name, message: "Voice created successfully" },

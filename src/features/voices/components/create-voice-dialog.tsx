@@ -1,5 +1,6 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, useCallback } from "react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -19,11 +20,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
 
+import { useCheckout } from "@/features/billing/hooks/use-checkout";
 import { CreateVoiceForm } from "@/features/voices/components/create-voice-form";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
 
 interface CreateVoiceDialogProps {
   children?: ReactNode;
@@ -38,6 +40,24 @@ export function CreateVoiceDialog({
 }: CreateVoiceDialogProps) {
   const isMobile = useIsMobile();
 
+  const { checkout } = useCheckout();
+
+  const handleError = useCallback(
+    (message: string) => {
+      if (message === "SUBSCRIPTION_REQUIRED") {
+        toast.error("Subscription required", {
+          action: {
+            label: "Subscribe",
+            onClick: () => checkout(),
+          },
+        });
+      } else {
+        toast.error(message);
+      }
+    },
+    [checkout],
+  );
+
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
@@ -51,6 +71,7 @@ export function CreateVoiceDialog({
           </DrawerHeader>
           <CreateVoiceForm
             scrollable
+            onError={handleError}
             footer={(submit) => {
               return (
                 <DrawerFooter>
@@ -77,7 +98,7 @@ export function CreateVoiceDialog({
             Upload or record a new audio to add a new voice to your library
           </DialogDescription>
         </DialogHeader>
-        <CreateVoiceForm scrollable />
+        <CreateVoiceForm scrollable onError={handleError} />
       </DialogContent>
     </Dialog>
   );

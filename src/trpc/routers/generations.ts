@@ -2,11 +2,14 @@ import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
+import { TEXT_MAX_LENGTH } from "@/features/text-to-speech/data/constants";
+
 import { chatterbox } from "@/lib/chatterbox-client";
 import { prisma } from "@/lib/db";
+import { polar } from "@/lib/polar";
 import { uploadAudio } from "@/lib/r2";
-import { TEXT_MAX_LENGTH } from "@/features/text-to-speech/data/constants";
-import { createTRPCRouter, organizationProcedure } from "../init";
+
+import { createTRPCRouter, organizationProcedure } from "@/trpc/init";
 
 export const generationsRouter = createTRPCRouter({
   getById: organizationProcedure
@@ -49,6 +52,32 @@ export const generationsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      //Check for active subscription before generation
+      try {
+        const customerState = await polar.customers.getStateExternal({
+          externalId: ctx.orgId,
+        });
+
+        const hasActiveSubscription =
+          (customerState.activeSubscriptions ?? []).length > 0;
+
+        if (!hasActiveSubscription) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "SUBSCRIPTION_REQUIRED",
+          });
+        }
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "SUBSCRIPTION_REQUIRED",
+        });
+      }
+
       const voice = await prisma.voice.findUnique({
         where: {
           id: input.voiceId,
@@ -168,6 +197,20 @@ export const generationsRouter = createTRPCRouter({
           message: "Failed to store generated audio",
         });
       }
+
+      //Ingest usage event to Polar (fire-and-forget; don't block response)
+      polar.events
+        .ingest({
+          events: [
+            {
+              name: "tts_generation",
+              externalCustomerId: ctx.orgId,
+              metadata: { characters: input.text.length },
+              timestamp: new Date(),
+            },
+          ],
+        })
+        .catch(() => {});
 
       return { id: generationId };
     }),
